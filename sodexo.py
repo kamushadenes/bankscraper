@@ -91,7 +91,7 @@ class Sodexo(object):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Program to parse financial transactions from Sodexo')
+    parser = argparse.ArgumentParser(description='Program to parse financial transactions from Sodexo benefit')
     parser.add_argument('--card', help='Sodexo Card Number', required=True)
     parser.add_argument('--document', help='Sodexo Card Owner Document', required=True)
     parser.add_argument('--omit-sensitive-data', dest='omit', action='store_true', help='Omit sensitive data, like documents, paychecks and current balance')

@@ -31,3 +31,21 @@ optional arguments:
   --balance             Get only account balance
   --quiet               Be quiet
 </code></pre>
+
+### Sodexo
+<pre><code>
+usage: sodexo.py [-h] --card CARD --document DOCUMENT [--omit-sensitive-data]
+                 [--balance] [--quiet]
+
+Program to parse financial transactions from Sodexo benefit
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --card CARD           Sodexo Card Number
+  --document DOCUMENT   Sodexo Card Owner Document
+  --omit-sensitive-data
+                        Omit sensitive data, like documents, paychecks and
+                        current balance
+  --balance             Get only account balance
+  --quiet               Be quiet
+</code></pre>
