@@ -473,8 +473,8 @@ class Itau(object):
             for t in trans:
                 if 'S A L D O' in t:
                     bl.append(t)
-            print('{}{}'.format('-' if bl[-1].split()[0] == 'D' else '', bl[-1].split()[-1]))
-            return '{}{}'.format('-' if bl[-1].split()[0] == 'D' else '', bl[-1].split()[-1])
+            print('R$ {}{}'.format('-' if bl[-1].split()[0] == 'D' else '', bl[-1].split()[-1]))
+            return 'R$ {}{}'.format('-' if bl[-1].split()[0] == 'D' else '', bl[-1].split()[-1])
 
         else:
             bl = []
@@ -520,7 +520,7 @@ if __name__ == '__main__':
     itau = Itau(args.branch, args.account, args.password, args.days, args.omit, args.balance, args.quiet)
     try:
         itau.login()
-        itau.warmup()
+        #itau.warmup()
         itau.get_transactions()
     except Exception as e:
         traceback.print_exc()
