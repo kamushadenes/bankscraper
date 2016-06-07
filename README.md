@@ -6,9 +6,9 @@ Brazilian Bank Scrapping Tool
 
 | Name   | Balance | Transactions History | Additional Info                                                           |
 | ---    | ---     | ---          | ---                                                                       |
-| ![Itaú](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-itau.png) | Yes     | 90 days      | Account Segment, Account Type, Owner Name, Owner Document, Owner Birthday |
+| ![Itaú](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-itau.png) | Yes     | 90 days      | Account Segment, Account Type, Owner Name, Owner Document, Owner Birthday, Overdraft |
 | ![Sodexo](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-sodexo.png) | Yes     | 20 days      | Card Type, Card Status, Company Name, Owner Name                          |
-| ![Banco do Brasil](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-bancodobrasil.png) | Yes     | 30 days      | Accout Type, Owner Name  |
+| ![Banco do Brasil](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-bancodobrasil.png) | Yes     | 30 days      | Account Type, Owner Name, Interest  |
 
 
 ## Usage
