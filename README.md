@@ -9,10 +9,10 @@ The banks below were added in the order they are listed
 
 | Name   | Balance | Transaction History | Additional Info                                                           |
 | ---    | ---     | ---          | ---                                                                       |
-| <div style="text-align:center" markdown="1">[![Itaú](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-itau.png)](https://github.com/kamushadenes/bankscraper/blob/master/itau.py)</div> | Yes     | 90 days      | Account Segment, Account Type, Owner Name, Owner Document, Owner Birthday, Overdraft |
-| <div style="text-align:center" markdown="1">[![Sodexo](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-sodexo.png)](https://github.com/kamushadenes/bankscraper/blob/master/sodexo.py)</div: | Yes     | 20 days      | Card Type, Card Status, Company Name, Owner Name                          |
-| <div style="text-align:center" markdown="1">[![Banco do Brasil](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-bancodobrasil.png)](https://github.com/kamushadenes/bankscraper/blob/master/bancodobrasil.py)</div> | Yes     | 30 days      | Account Type, Owner Name, Interest  |
-| <div style="text-align:center" markdown="1">[![Ticket](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-ticket.png)](https://github.com/kamushadenes/bankscraper/blob/master/ticket.py)</div> | Yes     | 30 days      | -  |
+| [![Itaú](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-itau.png)](https://github.com/kamushadenes/bankscraper/blob/master/itau.py) | Yes     | 90 days      | Account Segment, Account Type, Owner Name, Owner Document, Owner Birthday, Overdraft |
+| [![Sodexo](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-sodexo.png)](https://github.com/kamushadenes/bankscraper/blob/master/sodexo.py) | Yes     | 20 days      | Card Type, Card Status, Company Name, Owner Name                          |
+| [![Banco do Brasil](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-bancodobrasil.png)](https://github.com/kamushadenes/bankscraper/blob/master/bancodobrasil.py) | Yes     | 30 days      | Account Type, Owner Name, Interest  |
+| [![Ticket](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-ticket.png)](https://github.com/kamushadenes/bankscraper/blob/master/ticket.py) | Yes     | 30 days      | -  |
 
 
 ## Usage
