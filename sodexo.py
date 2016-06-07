@@ -1,4 +1,4 @@
-from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException
+from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, App, Owner
 import uuid
 
 from time import sleep
@@ -20,15 +20,17 @@ class Sodexo(object):
     api_endpoint = 'https://www.app.sodexo.com.br/PMobileServer/Primeth'
 
 
-    def __init__(self, card, document, omit_sensitive_data=False, balance=False, quiet=False):
+    def __init__(self, card, document, omit_sensitive_data=False, quiet=False):
         if not quiet:
             print('[*] Sodexo Parser is starting...')
 
-        self.card = card
-        self.document = document
+
+        self.account = Account(document, card, account_type='card')
+
         self.omit_sensitive_data = omit_sensitive_data
-        self.balance = balance
         self.quiet = quiet
+        self.account.currency = 'R$'
+        self.account.bank = 'Sodexo'
 
 
         self.session = requests.Session()
@@ -36,15 +38,12 @@ class Sodexo(object):
         self.session.headers.update({'User-Agent': 'Apache-HttpClient/android/Nexus 5'})
         self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
 
-
-    def get_transactions(self):
-        if not self.quiet:
-            print('[*] Getting transactions...')
-
+    
+    def get_balance(self):
         payload = {
             'th': 'thsaldo',
-            'cardNumber': self.card,
-            'document': self.document
+            'cardNumber': self.account.card,
+            'document': self.account.document
         }
 
 
@@ -52,28 +51,61 @@ class Sodexo(object):
 
         body = r.json()
 
+        self.account.service_name = body['serviceName']
+        self.account.status = body['cardStatus']
+        self.account.company = body['companyName']
+        self.account.owner = Owner(body['name'])
+
+
+        self.account.balance = float(body['balanceAmount'].split()[-1].replace(',', '.'))
+
+
+
         if not self.quiet:
             print()
-            print('[*] Service Name: {}'.format(body['serviceName']))
-            print('[*] Card Status: {}'.format(body['cardStatus']))
-            print('[*] Company: {}'.format(body['companyName']))
-            print('[*] Owner: {}'.format(body['name']))
-            print('[*] Card Number: {}'.format(body['cardNumber']))
-            print('[*] Document: {}'.format(body['document']))
-            if not self.balance:
-                print()
-                print('[*] Balance: {}'.format(body['balanceAmount']))
+            self.account.print_info()
+            print()
+
+        print(self.account.get_balance())
+
+        return self.account.get_balance()
+
+    def get_transactions(self):
+        if not self.quiet:
+            print('[*] Getting transactions...')
+
+        payload = {
+            'th': 'thsaldo',
+            'cardNumber': self.account.card,
+            'document': self.account.document
+        }
+
+
+        r = self.session.post(self.api_endpoint, data=payload)
+
+        body = r.json()
+
+        self.account.service_name = body['serviceName']
+        self.account.status = body['cardStatus']
+        self.account.company = body['companyName']
+        self.account.owner = Owner(body['name'])
+
+
+        self.account.balance = body['balanceAmount']
+
+
+
+        if not self.quiet:
+            print()
+            self.account.print_info()
             print()
 
 
-        if self.balance:
-            print(body['balanceAmount'])
-            return body['balanceAmount']
-        else:
-            transactions = self.parse_transactions(body['transactions'])
-            for trans in transactions:
-                print(trans)
-            return transactions
+        self.parse_transactions(body['transactions'])
+        for trans in self.account.transactions:
+            trans.print_info()
+
+        return self.account.transactions
 
 
     def parse_transactions(self, transactions):
@@ -81,12 +113,19 @@ class Sodexo(object):
 
         for trans in transactions:
             try:
-                msg = '{} - {} - {} - {}'.format(trans['type'], trans['date'], trans['history'], trans['value'])
-                tlist.append(msg)
+                t = Transaction(trans['history'])
+                t.id = trans['authorizationNumber']
+                t.currency = 'R$'
+                t.date = datetime.strptime(trans['date'], '%d/%m/%Y').date()
+                t.value = float(trans['value'].split()[-1].replace(',', '.'))
+                t.sign = '-' if trans['type'].endswith('bito') else '+'
+                t.raw = trans
+                self.account.transactions.append(t)
             except:
-                pass
+                traceback.print_exc()
+                continue
 
-        return tlist
+        return self.account.transactions
 
 
 if __name__ == '__main__':
@@ -102,9 +141,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    sodexo = Sodexo(args.card, args.document, args.omit, args.balance, args.quiet)
+    sodexo = Sodexo(args.card, args.document, args.omit, args.quiet)
     try:
-        sodexo.get_transactions()
+        if args.balance:
+            sodexo.get_balance()
+        else:
+            sodexo.get_transactions()
     except Exception as e:
         traceback.print_exc()
         exit(1)

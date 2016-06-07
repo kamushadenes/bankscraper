@@ -1,11 +1,11 @@
-from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException
+from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, Owner, App
 import uuid
 
 from time import sleep
 
 import requests
 from requests.adapters import HTTPAdapter 
-from datetime import datetime
+from datetime import datetime, date
 
 import json
 
@@ -32,26 +32,20 @@ class Itau(object):
 
     device_session_template = 'Modelo: {platform_model}|Operadora:|VersaoSO:{platform_version}|appIdCore:'
 
-    def __init__(self, branch, account, password, days=15, omit_sensitive_data=False, balance=False, quiet=False):
+    def __init__(self, branch, account, password, days=15, omit_sensitive_data=False, quiet=False):
         if not quiet:
             print('[*] Itaú Parser is starting...')
 
-        self.branch = str(branch)
-        self.account = str(account).split('-')[0]
-        self.dac = str(account).split('-')[1]
-        self.password = str(password)
+        self.account = Account(str(branch), str(account).split('-')[0], str(password), str(account).split('-')[1])
+        self.account.bank = 'Itaú'
+        self.account.currency = 'R$'
+
         self.session = requests.Session()
 
         self.omit_sensitive_data = omit_sensitive_data
-        self.balance = balance
         self.quiet = quiet
 
         self.encoding = ''
-        self.account_owner = ''
-        self.account_segment = ''
-        self.account_type = ''
-        self.account_document = ''
-        self.account_owner_birthday = ''
         self.ticket = ''
 
 
@@ -100,6 +94,18 @@ class Itau(object):
         return obj
 
 
+    def generate_timestamps(self):
+        now1 = self.format_date_pd(datetime.now())
+        sleep(0.2)
+        now2 = self.format_date_pd(datetime.now())
+        sleep(0.2)
+        now3 = self.format_date_pd(datetime.now())
+        sleep(0.2)
+        now4 = self.format_date_pd(datetime.now())
+
+        return {'d1': now1, 'd2': now2, 'd3': now3, 'd4': now4}
+
+
 
     def build_device_session(self, extra):
 
@@ -121,7 +127,7 @@ class Itau(object):
 
     def login(self):
         if not self.quiet:
-            print('[*] Logging in to {} {}-{}'.format(self.branch,self.account,self.dac))
+            print('[*] Logging in to {} {}-{}'.format(self.account.branch,self.account.number,self.account.dac))
 
         payload = {
             'Guid': '7C9C0508-6EFD-47B6-9DBA-5E4B1205D560',
@@ -154,28 +160,26 @@ class Itau(object):
             raise GeneralException('Something went wrong...', request=r)
 
 
-        self.eula_url = obj['Dados']['home_config']['link_termos_uso']
+        self.account.app = App('Itaú')
+
+        self.account.app.eula_url = obj['Dados']['home_config']['link_termos_uso']
 
 
         for o in obj['Dados']['app_config']['plataforma']:
             if o['nome'] == 'android':
-                self.android_last_build = o['build_number_atual']
-                self.android_url = o['url_loja:']
+                self.account.app.platform['android']['version'] = o['build_number_atual']
+                self.account.app.platform['android']['url'] = o['url_loja:']
             elif o['nome'] == 'iphone':
-                self.ios_last_build = o['build_number_atual']
-                self.ios_url = o['url_loja:']
+                self.account.app.platform['ios']['version'] = o['build_number_atual']
+                self.account.app.platform['ios']['url'] = o['url_loja:']
             elif o['nome'] == 'windowsphone':
-                self.windowsphone_last_build = o['build_number_8']
-                self.windowsphone_url = o['url_loja:']
+                self.account.app.platform['windowsphone']['version'] = o['build_number_8']
+                self.account.app.platform['windowsphone']['url']= o['url_loja:']
 
 
         if not self.quiet:
             print()
-            print('[*] EULA Url: {}'.format(self.eula_url))
-            print()
-            print('[*] Android Last Version: {}'.format(self.android_last_build))
-            print('[*] iOS Last Version: {}'.format(self.ios_last_build))
-            print('[*] Windows Phone Last Version: {}'.format(self.windowsphone_last_build))
+            self.account.app.print_info()
             print()
 
         now = datetime.now()
@@ -183,25 +187,26 @@ class Itau(object):
         if not self.quiet:
             print('[*] Getting account information...')
 
+        t = self.generate_timestamps()
         payload = {
             'DeviceId': self.device_id,
             'UserId': self.user_id,
             'UA': 'AppItauSmartPF:R1;{version};{platform};{platform_version};{platform_model};{{F001;}}'.format(version=self.app_version, platform=self.platform, platform_version=self.platform_version,platform_model=self.platform_model),
-            'Agencia': self.branch,
-            'Dac':  self.dac,
+            'Agencia': self.account.branch,
+            'Dac':  self.account.dac,
             'platform': self.platform,
             'Tecnologia': 4,
             'Sv': '',
             'appID': self.app_id,
             'appver': self.app_version,
             'ListaMenu': '',
-            'Conta': self.account,
+            'Conta': self.account.number,
             'channel': 'rc',
             'serviceID': 'srvJLogin',
             'cacheid': '',
-            'Senha': self.password,
+            'Senha': self.account.password,
             'platformver': self.platform_extra_version,
-            'DadosSessaoDevice': self.build_device_session('root:X|PD:{dt1},{dt2}H'.format(dt1=self.format_date_pd(now), dt2=self.format_date_pd(datetime.now())))
+            'DadosSessaoDevice': self.build_device_session('root:X|PD:{d1},{d2}H'.format(**t))
         }
 
         r = self.post(payload)
@@ -225,23 +230,21 @@ class Itau(object):
 
         self.encoding = obj['Dados']['?xml']['@encoding']
 
-        self.account_owner = obj['Dados']['RESPOSTA']['DADOS']['NOME_CORRENTISTA'].strip().title()
-        self.account_segment = obj['Dados']['RESPOSTA']['DADOS']['SEGMENTO']
-        self.account_type = 'Física' if obj['Dados']['RESPOSTA']['DADOS']['PESSOA'] == 'F' else 'Jurídica'
-        self.account_document = obj['Dados']['RESPOSTA']['DADOS']['CPF_CNPJ_CLIENTE']
-        self.account_owner_birthday = datetime.strptime(obj['Dados']['RESPOSTA']['DADOS']['DT8_GB07'], '%d%m%Y')
+        self.account.owner = Owner(obj['Dados']['RESPOSTA']['DADOS']['NOME_CORRENTISTA'].strip().title())
+        self.account.segment = obj['Dados']['RESPOSTA']['DADOS']['SEGMENTO'].strip()
+        self.account.type = 'Física' if obj['Dados']['RESPOSTA']['DADOS']['PESSOA'] == 'F' else 'Jurídica'
+        self.account.owner.document = obj['Dados']['RESPOSTA']['DADOS']['CPF_CNPJ_CLIENTE'].strip()
+        self.account.owner.birthday = datetime.strptime(obj['Dados']['RESPOSTA']['DADOS']['DT8_GB07'], '%d%m%Y')
+
         self.holder_code = obj['Dados']['RESPOSTA']['DADOS']['TITULARIDADE']
         self.ticket = obj['Ticket']
         
 
         if not self.quiet:
-            print('[*] Account Branch: {}'.format(self.branch))
-            print('[*] Account Number: {}-{}'.format(self.account, self.dac))
-            print('[*] Account Segment: {}'.format(self.account_segment))
-            print('[*] Account Type: {}'.format(self.account_type))
-            print('[*] Account Owner: {}'.format(self.account_owner))
-            print('[*] Account Owner Document: {}'.format(self.account_document if not self.omit_sensitive_data else 'OMITED'))
-            print('[*] Account Owner Birthday: {}'.format(self.account_owner_birthday.strftime('%Y-%m-%d')))
+            print()
+            self.account.print_info()
+            print()
+            self.account.owner.print_info()
             print()
 
 
@@ -250,13 +253,7 @@ class Itau(object):
         if not self.quiet:
             print('[*] Logging out...')
 
-        now1 = self.format_date_pd(datetime.now())
-        sleep(0.5)
-        now2 = self.format_date_pd(datetime.now())
-        sleep(0.5)
-        now3 = self.format_date_pd(datetime.now())
-        sleep(0.5)
-        now4 = self.format_date_pd(datetime.now())
+        t = self.generate_timestamps()
         payload = {
             'DeviceId': self.device_id,
             'UserId': self.user_id,
@@ -270,7 +267,7 @@ class Itau(object):
             'channel': 'rc',
             'serviceID': 'srvJGenerico',
             'platformver': self.platform_extra_version,
-            'DadosSessaoDevice': 'PD:{d1},{d2},{d3},{d4}|AGC_SAIR:{ag}{ac}{dac}'.format(d1=now1,d2=now2,d3=now3,d4=now4,ag=self.branch,ac=self.account,dac=self.dac),
+            'DadosSessaoDevice': 'PD:{d1},{d2},{d3},{d4}|AGC_SAIR:{ag}{ac}{dac}'.format(ag=self.account.branch,ac=self.account.number,dac=self.account.dac,**t),
             'Lista': ''
 
         }
@@ -286,16 +283,10 @@ class Itau(object):
             raise GeneralException('Something went wrong...', request=r)
 
 
-    def warmup(self):
+    def post_login_warmup(self):
         if not self.quiet:
             print('[*] Warming up...')
-        now1 = self.format_date_pd(datetime.now())
-        sleep(0.5)
-        now2 = self.format_date_pd(datetime.now())
-        sleep(0.5)
-        now3 = self.format_date_pd(datetime.now())
-        sleep(0.5)
-        now4 = self.format_date_pd(datetime.now())
+        t = self.generate_timestamps()
         payload = {
             'DeviceId': self.device_id,
             'UserId': self.user_id,
@@ -309,7 +300,7 @@ class Itau(object):
             'channel': 'rc',
             'serviceID': 'srvJGenerico',
             'platformver': self.platform_extra_version,
-            'DadosSessaoDevice': 'PD:{d1},{d2},{d3},{d4}|AGC_CSTA_PORT_TIPO:{ag}{ac}{dac}'.format(d1=now1,d2=now2,d3=now3,d4=now4,ag=self.branch,ac=self.account,dac=self.dac),
+            'DadosSessaoDevice': 'PD:{d1},{d2},{d3},{d4}|AGC_CSTA_PORT_TIPO:{ag}{ac}{dac}'.format(ag=self.account.branch,ac=self.account.number,dac=self.account.dac,**t),
             'Lista': 'EMHUOYKIRBVPRCMNEWZ60XJPRNY|PF |352136067883617|00012'
 
         }
@@ -399,10 +390,10 @@ class Itau(object):
 
         payload = {
             'HolderCodeType': 1,
-            'AccountNumber': self.account,
-            'Dac': self.dac,
+            'AccountNumber': self.account.number,
+            'Dac': self.account.dac,
             'Type': 0,
-            'BranchNumber': self.branch,
+            'BranchNumber': self.account.branch,
             'HolderCode': self.holder_code,
             'appID': self.app_id,
             'appver': self.app_version,
@@ -424,16 +415,10 @@ class Itau(object):
             raise GeneralException('Something went wrong...', request=r)
 
 
-    def get_transactions(self):
+    def get_balance(self):
         if not self.quiet:
             print('[*] Getting transactions...')
-        now1 = self.format_date_pd(datetime.now())
-        sleep(0.5)
-        now2 = self.format_date_pd(datetime.now())
-        sleep(0.5)
-        now3 = self.format_date_pd(datetime.now())
-        sleep(0.5)
-        now4 = self.format_date_pd(datetime.now())
+        t = self.generate_timestamps()
         payload = {
             'DeviceId': self.device_id,
             'UserId': self.user_id,
@@ -449,7 +434,7 @@ class Itau(object):
             'platform': self.platform,
             'serviceID': 'srvJGenerico',
             'platformver': self.platform_extra_version,
-            'DadosSessaoDevice': 'PD:{d1},{d2},{d3},{d4}|AGC_EXTRATO:{ag}{ac}{dac}'.format(d1=now1,d2=now2,d3=now3,d4=now4,ag=self.branch,ac=self.account,dac=self.dac),
+            'DadosSessaoDevice': 'PD:{d1},{d2},{d3},{d4}|AGC_EXTRATO:{ag}{ac}{dac}'.format(ag=self.account.branch,ac=self.account.number,dac=self.account.dac,**t),
             'Lista': '{}|V|CC|E|1'.format(self.transaction_days)
 
         }
@@ -464,24 +449,60 @@ class Itau(object):
         else:
             raise GeneralException('Something went wrong...', request=r)
 
-        trans = self.parse_transactions(obj['Dados']['RESPOSTA']['DADOS']['DADOSEXTRATO']['EXTRATO']['MOVIMENT'])
+
+        for o in obj['Dados']['RESPOSTA']['DADOS']['DADOSEXTRATO']['SALDORESUMIDO']['ITEM']:
+            if o['NOME'] == 'SALDODISPSAQUERESUMO':
+                self.account.balance = float(o['VALOR'].replace(',', '.'))
+                self.account.sign = '-' if o['SINAL'] == 'D' else '+'
+                break
+
+        print(self.account.get_balance())
+
+        return self.account.get_balance()
 
 
-        bl = []
+    def get_transactions(self):
+        if not self.quiet:
+            print('[*] Getting transactions...')
 
-        if self.balance:
-            for t in trans:
-                if 'S A L D O' in t:
-                    bl.append(t)
-            print('R$ {}{}'.format('-' if bl[-1].split()[0] == 'D' else '', bl[-1].split()[-1]))
-            return 'R$ {}{}'.format('-' if bl[-1].split()[0] == 'D' else '', bl[-1].split()[-1])
+        t = self.generate_timestamps()
+        payload = {
+            'DeviceId': self.device_id,
+            'UserId': self.user_id,
+            'UA': 'AppItauSmartPF:R1;{version};{platform};{platform_version};{platform_model};{{F001;}}'.format(version=self.app_version, platform=self.platform, platform_version=self.platform_version,platform_model=self.platform_model),
+            'ServiceName': 'EXTRATO',
+            'Sv': '', 
+            'appID': self.app_id,
+            'appver': self.app_version,
+            'IPCliente': '',
+            'Ticket': self.ticket,
+            'channel': 'rc',
+            'cacheid': '',
+            'platform': self.platform,
+            'serviceID': 'srvJGenerico',
+            'platformver': self.platform_extra_version,
+            'DadosSessaoDevice': 'PD:{d1},{d2},{d3},{d4}|AGC_EXTRATO:{ag}{ac}{dac}'.format(ag=self.account.branch,ac=self.account.number,dac=self.account.dac, **t),
+            'Lista': '{}|V|CC|E|1'.format(self.transaction_days)
 
+        }
+
+
+        r = self.post(payload)
+
+        obj = self.json_recursive_loads(r.content.decode())
+
+        if obj['opstatus'] == 0:
+            pass
         else:
-            bl = []
-            for t in trans:
-                bl.append(t)
-                print(t)
-            return bl
+            raise GeneralException('Something went wrong...', request=r)
+
+        self.parse_transactions(obj['Dados']['RESPOSTA']['DADOS']['DADOSEXTRATO']['EXTRATO']['MOVIMENT'])
+
+        
+        for transaction in self.account.transactions:
+            transaction.print_info()
+
+        return self.account.transactions
 
 
     def parse_transactions(self, transactions):
@@ -490,16 +511,41 @@ class Itau(object):
         for trans in transactions:
             try:
                 if self.omit_sensitive_data:
-                    if trans['HISTOR'] not in ['SALDO', 'S A L D O'] and 'REMUNERACAO' not in trans['HISTOR'] and 'SALDO' not in trans['HISTOR']:
-                        msg = '{} - {} - {} - {}'.format(trans['DC2'], trans['DT8'], trans['HISTOR'], trans['VAL2'])
-                        tlist.append(msg)
+                    if trans['HISTOR'] not in ['SALDO', 'S A L D O'] and 'REMUNERACAO' not in trans['HISTOR'] and 'SALDO' not in trans['HISTOR'] and 'SDO CTA' not in trans['HISTOR']:
+                        t = Transaction(trans['HISTOR'])
+                        t.value = float(trans['VAL2'].replace(',', '.'))
+                        t.sign = '-' if trans['DC2'] == 'D' else '+'
+                        t.date = self.parse_date(trans['DT8']).date()
+                        t.currency = 'R$'
+                        t.raw = trans
+
+                        self.account.transactions.append(t)
                 else:
-                    msg = '{} - {} - {} - {}'.format(trans['DC2'], trans['DT8'], trans['HISTOR'], trans['VAL2'])
-                    tlist.append(msg)
+                    t = Transaction(trans['HISTOR'])
+                    t.value = float(trans['VAL2'].replace(',', '.'))
+                    t.sign = '-' if trans['DC2'] == 'D' else '+'
+                    t.date = self.parse_date(trans['DT8']).date()
+                    t.currency = 'R$'
+                    t.raw = trans
+                    self.account.transactions.append(t)
             except:
+                traceback.print_exc()
                 pass
 
-        return tlist
+        return self.account.transactions
+
+
+    def parse_date(self, d):
+        day = d.split('/')[0]
+        month = d.split('/')[1]
+        year = date.today().year
+
+        if int(month) > date.today().month:
+            year = date.today().year - 1
+
+        d = '{}/{}/{}'.format(day, month, year)
+
+        return datetime.strptime(d, '%d/%m/%Y')
 
 
 if __name__ == '__main__':
@@ -517,11 +563,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    itau = Itau(args.branch, args.account, args.password, args.days, args.omit, args.balance, args.quiet)
+    itau = Itau(args.branch, args.account, args.password, args.days, args.omit, args.quiet)
     try:
         itau.login()
         #itau.warmup()
-        itau.get_transactions()
+        if args.balance:
+            itau.get_balance()
+        else:
+            itau.get_transactions()
     except Exception as e:
         traceback.print_exc()
         exit(1)
