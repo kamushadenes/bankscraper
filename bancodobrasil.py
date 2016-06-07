@@ -101,6 +101,7 @@ class BB(BankScraper):
         if not self.quiet:
             print()
             self.account.print_info()
+            self.account.owner.print_info()
             print()
 
 

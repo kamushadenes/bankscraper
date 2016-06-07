@@ -75,7 +75,7 @@ class App(object):
 class Account(object):
 
 
-    def __init__(self, branch, number, password=None, dac=None, account_type='bank'):
+    def __init__(self, branch, number, password=None, dac='', account_type='bank'):
         self.bank = 'Generic'
         self.transactions = []
         self.currency = '$'
@@ -144,7 +144,8 @@ class Owner(object):
     def print_info(self):
         print('[*] Account Owner: {}'.format(self.name))
         print('[*] Account Owner Document: {}'.format(self.document))
-        print('[*] Account Owner Birthday: {}'.format(self.birthday.strftime('%Y-%m-%d')))
+        if self.birthday:
+            print('[*] Account Owner Birthday: {}'.format(self.birthday.strftime('%Y-%m-%d')))
 
 
 class BankScraper(object):
