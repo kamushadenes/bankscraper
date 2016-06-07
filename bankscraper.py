@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 
 class AnotherActiveSessionException(Exception):
     def __init__(self, message, errors=None, request=None):
@@ -28,7 +29,7 @@ class Transaction(object):
     
     def __init__(self, description):
         self.id = 0
-        self.value = 0
+        self.value = Decimal(0.00)
         self.sign = '+'
         self.description = description
         self.date = date.today()
@@ -80,6 +81,10 @@ class Account(object):
         self.transactions = []
         self.currency = '$'
 
+
+        self.overdraft = Decimal(0.00)
+        self.interest = Decimal(0.00)
+
         self.account_type = account_type
         if self.account_type == 'card':
             self.card = number
@@ -103,6 +108,12 @@ class Account(object):
         self.owner = None
 
         self.app = App('Generic')
+
+    def get_interest(self):
+        return '{} {}'.format(self.currency, self.interest)
+    
+    def get_overdraft(self):
+        return '{} {}'.format(self.currency, self.overdraft)
 
     def get_balance(self):
         return '{} {}'.format(self.currency, self.balance if self.sign != '-' else self.balance * -1)

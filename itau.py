@@ -1,5 +1,6 @@
 from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, Owner, App
 import uuid
+from decimal import Decimal
 
 from time import sleep
 
@@ -452,9 +453,10 @@ class Itau(object):
 
         for o in obj['Dados']['RESPOSTA']['DADOS']['DADOSEXTRATO']['SALDORESUMIDO']['ITEM']:
             if o['NOME'] == 'SALDODISPSAQUERESUMO':
-                self.account.balance = float(o['VALOR'].replace(',', '.'))
+                self.account.balance = Decimal(o['VALOR'].replace('.', '').replace(',', '.'))
                 self.account.sign = '-' if o['SINAL'] == 'D' else '+'
-                break
+            elif o['NOME'] == 'LIMITELISRESUMO':
+                self.account.overdraft = Decimal(o['VALOR'].replace('.', '').replace(',', '.'))
 
         print(self.account.get_balance())
 
@@ -513,7 +515,7 @@ class Itau(object):
                 if self.omit_sensitive_data:
                     if trans['HISTOR'] not in ['SALDO', 'S A L D O'] and 'REMUNERACAO' not in trans['HISTOR'] and 'SALDO' not in trans['HISTOR'] and 'SDO CTA' not in trans['HISTOR']:
                         t = Transaction(trans['HISTOR'])
-                        t.value = float(trans['VAL2'].replace(',', '.'))
+                        t.value = Decimal(trans['VAL2'].replace('.', '').replace(',', '.'))
                         t.sign = '-' if trans['DC2'] == 'D' else '+'
                         t.date = self.parse_date(trans['DT8']).date()
                         t.currency = 'R$'
@@ -522,7 +524,7 @@ class Itau(object):
                         self.account.transactions.append(t)
                 else:
                     t = Transaction(trans['HISTOR'])
-                    t.value = float(trans['VAL2'].replace(',', '.'))
+                    t.value = Decimal(trans['VAL2'].replace('.', '').replace(',', '.'))
                     t.sign = '-' if trans['DC2'] == 'D' else '+'
                     t.date = self.parse_date(trans['DT8']).date()
                     t.currency = 'R$'

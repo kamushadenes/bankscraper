@@ -1,4 +1,5 @@
 import requests
+from decimal import Decimal
 from requests.adapters import HTTPAdapter
 from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, Owner, App
 from random import randint
@@ -133,7 +134,7 @@ class BB(BankScraper):
 
         jr = j['servicoSaldo']['saldo']
 
-        self.account.balance = float(jr.split()[0].replace(',', '.')) * -1 if jr.split()[-1] == 'D' else float(jr.split()[0].replace(',', '.'))
+        self.account.balance = Decimal(jr.split()[0].replace('.', '').replace(',', '.')) * -1 if jr.split()[-1] == 'D' else float(jr.split()[0].replace('.', '').replace(',', '.'))
 
         print(self.account.get_balance())
 
@@ -163,13 +164,19 @@ class BB(BankScraper):
                             if len(tt['componentes']) == 3 and tt['componentes'][0]['componentes'][0]['texto'] != 'Dia':
                                 t = Transaction(tt['componentes'][1]['componentes'][0]['texto'])
                                 t.date = self.parse_date(tt['componentes'][0]['componentes'][0]['texto'], month[0], month[2]).date()
-                                t.value = float(tt['componentes'][2]['componentes'][0]['texto'].split()[0].replace(',', '.'))
+                                t.value = Decimal(tt['componentes'][2]['componentes'][0]['texto'].split()[0].replace('.', '').replace(',', '.'))
                                 t.sign = '-' if tt['componentes'][2]['componentes'][0]['texto'].split()[-1] == 'D' else '+'
                                 t.currency = 'R$'
                                 t.raw = tt['componentes']
                                 self.account.transactions.append(t)
                             else:
                                 continue
+                elif s['cabecalho'].startswith('Informa') and s['cabecalho'].endswith('es adicionais'):
+                    for tt in s['celulas']:
+                        if tt['TIPO'] == 'celula':
+                            print(tt['componentes'][0]['componentes'][0]['texto'])
+                            if tt['componentes'][0]['componentes'][0]['texto'] == 'Juros':
+                                self.account.interest = Decimal(tt['componentes'][1]['componentes'][0]['texto'].split()[-1].replace('.', '').replace(',', '.'))
 
 
         for trans in self.account.transactions:

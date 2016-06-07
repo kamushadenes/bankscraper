@@ -1,4 +1,5 @@
 from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, App, Owner
+from decimal import Decimal
 import uuid
 
 from time import sleep
@@ -57,7 +58,7 @@ class Sodexo(object):
         self.account.owner = Owner(body['name'])
 
 
-        self.account.balance = float(body['balanceAmount'].split()[-1].replace(',', '.'))
+        self.account.balance = Decimal(body['balanceAmount'].split()[-1].replace('.', '').replace(',', '.'))
 
 
 
@@ -117,7 +118,7 @@ class Sodexo(object):
                 t.id = trans['authorizationNumber']
                 t.currency = 'R$'
                 t.date = datetime.strptime(trans['date'], '%d/%m/%Y').date()
-                t.value = float(trans['value'].split()[-1].replace(',', '.'))
+                t.value = Decimal(trans['value'].split()[-1].replace('.', '').replace(',', '.'))
                 t.sign = '-' if trans['type'].endswith('bito') else '+'
                 t.raw = trans
                 self.account.transactions.append(t)
