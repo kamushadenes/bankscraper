@@ -4,12 +4,15 @@ Script suite to parse financial transactions from brazilian bank and benefit acc
 
 ## Current Supported Banks
 
+The banks below were added in the order they are listed
+
 
 | Name   | Balance | Transaction History | Additional Info                                                           |
 | ---    | ---     | ---          | ---                                                                       |
 | [![Itaú](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-itau.png)](https://github.com/kamushadenes/bankscraper/blob/master/itau.py) | Yes     | 90 days      | Account Segment, Account Type, Owner Name, Owner Document, Owner Birthday, Overdraft |
 | [![Sodexo](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-sodexo.png)](https://github.com/kamushadenes/bankscraper/blob/master/sodexo.py) | Yes     | 20 days      | Card Type, Card Status, Company Name, Owner Name                          |
 | [![Banco do Brasil](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-bancodobrasil.png)](https://github.com/kamushadenes/bankscraper/blob/master/bancodobrasil.py) | Yes     | 30 days      | Account Type, Owner Name, Interest  |
+| [![Ticket](https://raw.githubusercontent.com/kamushadenes/bankscrapper/master/logo/icon-ticket.png)](https://github.com/kamushadenes/bankscraper/blob/master/ticket.py) | Yes     | 30 days      | -  |
 
 
 ## Usage
@@ -66,6 +69,23 @@ optional arguments:
   --account ACCOUNT     Banco do Brasil Account number, in the format 0000-0
   --password PASSWORD   Banco do Brasil Account password
   --days DAYS           Transaction log days
+  --omit-sensitive-data
+                        Omit sensitive data, like documents, paychecks and
+                        current balance
+  --balance             Get only account balance
+  --quiet               Be quiet
+</code></pre>
+
+### Ticket
+<pre><code>
+usage: ticket.py [-h] --card CARD [--omit-sensitive-data] [--balance]
+                 [--quiet]
+
+Program to parse financial transactions from Ticket benefit
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --card CARD           Ticket Card Number
   --omit-sensitive-data
                         Omit sensitive data, like documents, paychecks and
                         current balance
