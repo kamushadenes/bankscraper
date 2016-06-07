@@ -1,5 +1,6 @@
-# bankscrapper
-Brazilian Bank Scrapping Tool
+# bankscraper
+
+Script suite to parse financial transactions from brazilian bank and benefit accounts, including support (when applicable) for interest fees and overdraft limits, besides account metadata and account holder information, when available
 
 ## Current Supported Banks
 
