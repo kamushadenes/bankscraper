@@ -3,6 +3,7 @@ env
 *.pyc
 .python_version
 __pycache__
+ghostdriver.log
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

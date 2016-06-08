@@ -7,10 +7,17 @@ import traceback
 
 import argparse
 
+from time import sleep
+
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import UnexpectedAlertPresentException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
 
 from bs4 import BeautifulSoup as bs
 
@@ -41,8 +48,15 @@ class Santander(object):
 
         self.transaction_days = days
 
-        self.session = webdriver.Firefox()
+        webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.settings.userAgent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36'
+        webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.customHeaders.Accept-Language'] = 'pt-BR'
+        webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.customHeaders.Connection'] = 'keep-alive'
+
+        self.session = webdriver.PhantomJS()
         self.session.implicitly_wait(10)
+        self.session.set_window_size(1920, 1080)
+
+        self.wait = WebDriverWait(self.session, 10)
 
     def login(self):
         if not self.quiet:
@@ -51,20 +65,29 @@ class Santander(object):
         try:
             self.session.get(self.first_page_url)
 
-            elem = self.session.find_element_by_name('txtCPF')
+            #elem = self.session.find_element_by_name('txtCPF')
+            elem = self.wait.until(EC.visibility_of_element_located((By.NAME, 'txtCPF')))
             elem.send_keys(self.account.document)
             elem.send_keys(Keys.ENTER)
 
-            self.session.switch_to.frame(self.session.find_element_by_name('Principal'))
-            self.session.switch_to.frame(self.session.find_element_by_name('MainFrame'))
+            sleep(3)
 
-            elem = self.session.find_element_by_id('txtSenha')
+
+            self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.NAME, 'Principal'))))
+            self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.NAME, 'MainFrame'))))
+
+            if 'iframeContrato' in self.session.page_source:
+                print('[-] You need to manually accept an usage agreement')
+                exit(1)
+
+            #elem = self.session.find_element_by_id('txtSenha')
+            elem = self.wait.until(EC.visibility_of_element_located((By.ID, 'txtSenha')))
             elem.send_keys(self.account.password)
             elem.send_keys(Keys.ENTER)
 
             self.session.switch_to.default_content()
-            self.session.switch_to.frame(self.session.find_element_by_name('Principal'))
-            self.session.switch_to.frame(self.session.find_element_by_name('Corpo'))
+            self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.NAME, 'Principal'))))
+            self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.NAME, 'Corpo'))))
 
             ola = self.session.find_element_by_id('ola')
 
@@ -83,6 +106,10 @@ class Santander(object):
             self.account.owner.print_info()
         except UnexpectedAlertPresentException:
             print('[-] Login failed, invalid credentials')
+            exit(1)
+        except Exception:
+            traceback.print_exc()
+            self.session.save_screenshot('/tmp/screenie.png')
             exit(1)
 
     def logout(self):
@@ -112,10 +139,10 @@ class Santander(object):
         elem.find_element_by_class_name('botao').click()
 
         self.session.switch_to.default_content()
-        self.session.switch_to.frame(self.session.find_element_by_name('Principal'))
-        self.session.switch_to.frame(self.session.find_element_by_name('Corpo'))
-        self.session.switch_to.frame(self.session.find_element_by_name('iframePrinc'))
-        self.session.switch_to.frame(self.session.find_element_by_id('extrato'))
+        self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.NAME, 'Principal'))))
+        self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.NAME, 'Corpo'))))
+        self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.NAME, 'iframePrinc'))))
+        self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.ID, 'extrato'))))
 
         elem = self.session.find_elements_by_class_name('lista')
 
@@ -138,9 +165,9 @@ class Santander(object):
                 self.account.overdraft = Decimal(tr.find_all('td')[1].text.strip().replace('-', '').replace('.', '').replace(',', '.'))
 
         self.session.switch_to.default_content()
-        self.session.switch_to.frame(self.session.find_element_by_name('Principal'))
-        self.session.switch_to.frame(self.session.find_element_by_name('Corpo'))
-        self.session.switch_to.frame(self.session.find_element_by_id('ifr_sal'))
+        self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.NAME, 'Principal'))))
+        self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.NAME, 'Corpo'))))
+        self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.ID, 'ifr_sal'))))
 
         elem = self.session.find_element_by_id('tblSaldos')
 
