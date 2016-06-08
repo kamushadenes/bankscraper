@@ -95,3 +95,23 @@ optional arguments:
   --balance             Get only account balance
   --quiet               Be quiet
 </code></pre>
+
+### Santander
+<pre><code>
+usage: santander.py [-h] --document DOCUMENT --password PASSWORD [--days DAYS]
+                    [--omit-sensitive-data] [--balance] [--quiet]
+
+Program to parse financial transactions from Santander
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --document DOCUMENT   Santander Account Owner Document
+  --password PASSWORD   Santander Account password
+  --days DAYS           Transaction log days
+  --omit-sensitive-data
+                        Omit sensitive data, like documents, paychecks and
+                        current balance
+  --balance             Get only account balance
+  --quiet               Be quiet
+</code></pre>
+

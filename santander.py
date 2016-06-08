@@ -113,7 +113,7 @@ class Santander(object):
 
         select = Select(elem.find_element_by_name('cboSelectPeriodoExtrato'))
 
-        select.select_by_value('60')
+        select.select_by_value(self.transaction_days)
 
         elem.find_element_by_class_name('botao').click()
 
@@ -195,7 +195,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Program to parse financial transactions from Santander')
     parser.add_argument('--document', help='Santander Account Owner Document', required=True)
     parser.add_argument('--password', help='Santander Account password', required=True)
-    parser.add_argument('--days', help='Transaction log days', default=15, type=int)
+    parser.add_argument('--days', help='Transaction log days', default=60, type=int)
     parser.add_argument('--omit-sensitive-data', dest='omit', action='store_true', help='Omit sensitive data, like documents, paychecks and current balance')
     parser.add_argument('--balance', dest='balance', action='store_true', help='Get only account balance')
     parser.add_argument('--quiet', dest='quiet', action='store_true', help='Be quiet')
