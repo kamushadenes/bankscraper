@@ -7,12 +7,12 @@ Script suite to parse financial transactions from brazilian bank and benefit acc
 The banks below were added in the order they are listed
 
 
-| Name   | Balance | Transaction History | Additional Info                                                           |
-| ---    | ---     | ---          | ---                                                                       |
-| [![Itaú](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-itau.png)](https://github.com/kamushadenes/bankscraper/blob/master/itau.py) | Yes     | 90 days      | Account Segment, Account Type, Owner Name, Owner Document, Owner Birthday, Overdraft |
-| [![Sodexo](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-sodexo.png)](https://github.com/kamushadenes/bankscraper/blob/master/sodexo.py) | Yes     | 20 days      | Card Type, Card Status, Company Name, Owner Name                          |
-| [![Banco do Brasil](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-bancodobrasil.png)](https://github.com/kamushadenes/bankscraper/blob/master/bancodobrasil.py) | Yes     | 30 days      | Account Type, Owner Name, Interest  |
-| [![Ticket](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-ticket.png)](https://github.com/kamushadenes/bankscraper/blob/master/ticket.py) | Yes     | 30 days      | -  |
+| Name                                                                                                                                                                                          | Balance | Transaction History | Additional Info                                                                      | Method                               |
+| ---                                                                                                                                                                                           | ---     | ---                 | ---                                                                                  | ---                                  |
+| [![Itaú](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-itau.png)](https://github.com/kamushadenes/bankscraper/blob/master/itau.py)                              | Yes     | 90 days             | Account Segment, Account Type, Owner Name, Owner Document, Owner Birthday, Overdraft | Reversed Mobile API                  |
+| [![Sodexo](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-sodexo.png)](https://github.com/kamushadenes/bankscraper/blob/master/sodexo.py)                        | Yes     | 20 days             | Card Type, Card Status, Company Name, Owner Name                                     | Reversed Mobile API                  |
+| [![Banco do Brasil](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-bancodobrasil.png)](https://github.com/kamushadenes/bankscraper/blob/master/bancodobrasil.py) | Yes     | 30 days             | Account Type, Owner Name, Interest                                                   | Reversed Mobile API                  |
+| [![Ticket](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-ticket.png)](https://github.com/kamushadenes/bankscraper/blob/master/ticket.py)                        | Yes     | 30 days             | -                                                                                    | Website Scraping with Captcha Bypass |
 
 
 ## Usage

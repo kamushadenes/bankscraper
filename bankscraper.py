@@ -76,7 +76,7 @@ class App(object):
 class Account(object):
 
 
-    def __init__(self, branch, number, password=None, dac='', account_type='bank'):
+    def __init__(self, branch=None, number=None, password=None, document=None, card=None, dac='', account_type='bank'):
         self.bank = 'Generic'
         self.transactions = []
         self.currency = '$'
@@ -84,19 +84,19 @@ class Account(object):
 
         self.overdraft = Decimal(0.00)
         self.interest = Decimal(0.00)
+        self.personal_credit = Decimal(0.0)
 
         self.account_type = account_type
-        if self.account_type == 'card':
-            self.card = number
-            self.document = branch
-            self.company = ''
-            self.status = ''
-            self.service_name = ''
-        elif self.account_type == 'bank':
-            self.branch = branch
-            self.number = number
-            self.password = password
-            self.dac = dac
+        self.card = card
+        self.document = document
+        self.company = ''
+        self.status = ''
+        self.service_name = ''
+        self.password = password
+        self.branch = branch
+        self.number = number
+        self.password = password
+        self.dac = dac
 
 
         self.balance = 0

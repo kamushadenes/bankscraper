@@ -37,7 +37,7 @@ class Itau(object):
         if not quiet:
             print('[*] Itaú Parser is starting...')
 
-        self.account = Account(str(branch), str(account).split('-')[0], str(password), str(account).split('-')[1])
+        self.account = Account(branch=str(branch), number=str(account).split('-')[0], password=str(password), dac=str(account).split('-')[1])
         self.account.bank = 'Itaú'
         self.account.currency = 'R$'
 
@@ -54,18 +54,6 @@ class Itau(object):
 
 
         self.holder_code = ''
-
-
-        self.eula_url = ''
-
-        self.android_last_build = ''
-        self.android_url = ''
-
-        self.ios_last_build = ''
-        self.ios_url = ''
-
-        self.windowsphone_last_build = ''
-        self.windowsphone_url = ''
 
         self.session.mount(self.api_endpoint, HTTPAdapter(max_retries=32,pool_connections=50, pool_maxsize=50))
         self.session.headers.update({'User-Agent': 'Apache-HttpClient/android/Nexus 5'})

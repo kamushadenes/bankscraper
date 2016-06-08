@@ -31,7 +31,7 @@ class Ticket(object):
             print('[*] Ticket Parser is starting...')
 
 
-        self.account = Account(None, card, account_type='card')
+        self.account = Account(card=card, account_type='card')
 
         self.account.currency = 'R$'
 
@@ -80,10 +80,6 @@ class Ticket(object):
 
             self.token = r.json()['token']
 
-            if not self.quiet:
-                print('[*] Captcha decoded: {}'.format(self.captcha))
-                print('[*] Token: {}'.format(self.token))
-
             return self.token
 
 
@@ -121,6 +117,11 @@ class Ticket(object):
         r = self.session.post(self.transactions_url, data=payload)
 
         body = r.json()
+
+        if not body['status']:
+            print('[-] Failed to get card: {}'.format(body['messageError']))
+            exit(1)
+
 
         self.account.balance = Decimal(body['card']['balance']['value'].replace(',', '.'))
 

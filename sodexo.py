@@ -26,7 +26,7 @@ class Sodexo(object):
             print('[*] Sodexo Parser is starting...')
 
 
-        self.account = Account(document, card, account_type='card')
+        self.account = Account(document=document, card=card, account_type='card')
 
         self.omit_sensitive_data = omit_sensitive_data
         self.quiet = quiet

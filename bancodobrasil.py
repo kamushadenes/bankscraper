@@ -38,7 +38,7 @@ class BB(BankScraper):
         if not quiet:
             print('[*] Banco do Brasil Parser is starting...')
 
-        self.account = Account(branch, account, password)
+        self.account = Account(branch=branch, number=account, password=password)
 
         self.account.bank = 'Banco do Brasil'
         self.account.currency = 'R$'
