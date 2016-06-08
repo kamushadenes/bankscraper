@@ -117,7 +117,6 @@ class Santander(object):
 
         elem.find_element_by_class_name('botao').click()
 
-
         self.session.switch_to.default_content()
         self.session.switch_to.frame(self.session.find_element_by_name('Principal'))
         self.session.switch_to.frame(self.session.find_element_by_name('Corpo'))
