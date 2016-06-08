@@ -1,16 +1,18 @@
 from datetime import date
 from decimal import Decimal
 
+
 class AnotherActiveSessionException(Exception):
     def __init__(self, message, errors=None, request=None):
-        super(RuntimeError, self).__init__(message)
+        super(AnotherActiveSessionException, self).__init__(message)
 
         self.errors = errors
         print('[D] Request ({}): {}'.format(request.status_code, request.content.decode()))
 
+
 class MaintenanceException(Exception):
     def __init__(self, message, errors=None, request=None):
-        super(EnviromentError, self).__init__(message)
+        super(MaintenanceException, self).__init__(message)
 
         self.errors = errors
         print('[D] Request ({}): {}'.format(request.status_code, request.content.decode()))
@@ -18,7 +20,7 @@ class MaintenanceException(Exception):
 
 class GeneralException(Exception):
     def __init__(self, message, errors=None, request=None):
-        super(SystemError, self).__init__(message)
+        super(GeneralException, self).__init__(message)
 
         self.errors = errors
 
@@ -26,7 +28,7 @@ class GeneralException(Exception):
 
 
 class Transaction(object):
-    
+
     def __init__(self, description):
         self.id = 0
         self.value = Decimal(0.00)
@@ -37,10 +39,8 @@ class Transaction(object):
 
         self.raw = {}
 
-
     def get_value(self):
         return '{} {}'.format(self.currency, self.value if self.sign != '-' else self.value * -1)
-
 
     def __repr__(self):
         return 'Transaction #{} - {} on {}, value {}'.format(self.id, self.description, self.date, self.get_value())
@@ -52,7 +52,7 @@ class Transaction(object):
 class App(object):
 
     def __init__(self, name):
-    
+
         self.name = ''
         self.platform = {}
         self.platform['android'] = {'version': 0, 'url': ''}
@@ -61,26 +61,23 @@ class App(object):
 
         self.eula_url = ''
 
-
     def __repr__(self):
         return 'App {}, with versions {} (Android), {} (iOS) and {} (Windows Phone)'.format(self.name, self.platform['android']['version'], self.platform['ios']['version'], self.platform['windowsphone']['version'])
 
     def print_info(self):
-        print('[*] EULA Url: {}'.format(self.eula_url))                      
-        print()                                                              
+        print('[*] EULA Url: {}'.format(self.eula_url))
+        print()
         print('[*] Android Last Version: {}'.format(self.platform['android']['version']))
-        print('[*] iOS Last Version: {}'.format(self.platform['ios']['version']))        
+        print('[*] iOS Last Version: {}'.format(self.platform['ios']['version']))
         print('[*] Windows Phone Last Version: {}'.format(self.platform['windowsphone']['version']))
 
 
 class Account(object):
 
-
     def __init__(self, branch=None, number=None, password=None, document=None, card=None, dac='', account_type='bank'):
         self.bank = 'Generic'
         self.transactions = []
         self.currency = '$'
-
 
         self.overdraft = Decimal(0.00)
         self.interest = Decimal(0.00)
@@ -98,7 +95,6 @@ class Account(object):
         self.password = password
         self.dac = dac
 
-
         self.balance = 0
         self.sign = '+'
         self.segment = ''
@@ -111,7 +107,7 @@ class Account(object):
 
     def get_interest(self):
         return '{} {}'.format(self.currency, self.interest)
-    
+
     def get_overdraft(self):
         return '{} {}'.format(self.currency, self.overdraft)
 
@@ -131,12 +127,12 @@ class Account(object):
             print('[*] Account Segment: {}'.format(self.segment))
             print('[*] Account Type: {}'.format(self.type))
         elif self.account_type == 'card':
-            print('[*] Service Name: {}'.format(self.service_name))                                                                                                                                                                                                    
-            print('[*] Card Status: {}'.format(self.status))              
-            print('[*] Company: {}'.format(self.company))                 
-            print('[*] Owner: {}'.format(self.owner.name))                          
-            print('[*] Card Number: {}'.format(self.card))              
-            print('[*] Document: {}'.format(self.document))    
+            print('[*] Service Name: {}'.format(self.service_name))
+            print('[*] Card Status: {}'.format(self.status))
+            print('[*] Company: {}'.format(self.company))
+            print('[*] Owner: {}'.format(self.owner.name))
+            print('[*] Card Number: {}'.format(self.card))
+            print('[*] Document: {}'.format(self.document))
 
 
 class Owner(object):

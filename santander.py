@@ -1,12 +1,7 @@
 from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, Owner, App
-import uuid
 from decimal import Decimal
 
-from time import sleep
-
-from datetime import datetime, date
-
-import json
+from datetime import datetime
 
 import traceback
 
@@ -15,10 +10,10 @@ import argparse
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
+from selenium.common.exceptions import UnexpectedAlertPresentException
 
 from bs4 import BeautifulSoup as bs
 
-from selenium.common.exceptions import UnexpectedAlertPresentException
 
 class Santander(object):
 
@@ -96,7 +91,6 @@ class Santander(object):
 
         self.session.get(self.logout_url_1)
         self.session.get(self.logout_url_2)
-
 
     def get_balance(self):
         # All on the same page
@@ -177,19 +171,6 @@ class Santander(object):
 
         return self.account.transactions
 
-    def parse_date(self, d):
-        day = d.split('/')[0]
-        month = d.split('/')[1]
-        year = date.today().year
-
-        if int(month) > date.today().month:
-            year = date.today().year - 1
-
-        d = '{}/{}/{}'.format(day, month, year)
-
-        return datetime.strptime(d, '%d/%m/%Y')
-
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Program to parse financial transactions from Santander')
@@ -200,9 +181,7 @@ if __name__ == '__main__':
     parser.add_argument('--balance', dest='balance', action='store_true', help='Get only account balance')
     parser.add_argument('--quiet', dest='quiet', action='store_true', help='Be quiet')
 
-
     args = parser.parse_args()
-
 
     santander = Santander(args.document, args.password, args.days, args.omit, args.quiet)
     try:

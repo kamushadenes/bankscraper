@@ -1,14 +1,9 @@
 from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, App, Owner
 from decimal import Decimal
-import uuid
-
-from time import sleep
 
 import requests
-from requests.adapters import HTTPAdapter 
+from requests.adapters import HTTPAdapter
 from datetime import datetime
-
-import json
 
 import traceback
 
@@ -20,11 +15,9 @@ class Sodexo(object):
 
     api_endpoint = 'https://www.app.sodexo.com.br/PMobileServer/Primeth'
 
-
     def __init__(self, card, document, omit_sensitive_data=False, quiet=False):
         if not quiet:
             print('[*] Sodexo Parser is starting...')
-
 
         self.account = Account(document=document, card=card, account_type='card')
 
@@ -33,20 +26,17 @@ class Sodexo(object):
         self.account.currency = 'R$'
         self.account.bank = 'Sodexo'
 
-
         self.session = requests.Session()
-        self.session.mount(self.api_endpoint, HTTPAdapter(max_retries=32,pool_connections=50, pool_maxsize=50))
+        self.session.mount(self.api_endpoint, HTTPAdapter(max_retries=32, pool_connections=50, pool_maxsize=50))
         self.session.headers.update({'User-Agent': 'Apache-HttpClient/android/Nexus 5'})
         self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
 
-    
     def get_balance(self):
         payload = {
             'th': 'thsaldo',
             'cardNumber': self.account.card,
             'document': self.account.document
         }
-
 
         r = self.session.post(self.api_endpoint, data=payload)
 
@@ -57,10 +47,7 @@ class Sodexo(object):
         self.account.company = body['companyName']
         self.account.owner = Owner(body['name'])
 
-
         self.account.balance = Decimal(body['balanceAmount'].split()[-1].replace('.', '').replace(',', '.'))
-
-
 
         if not self.quiet:
             print()
@@ -81,7 +68,6 @@ class Sodexo(object):
             'document': self.account.document
         }
 
-
         r = self.session.post(self.api_endpoint, data=payload)
 
         body = r.json()
@@ -91,16 +77,12 @@ class Sodexo(object):
         self.account.company = body['companyName']
         self.account.owner = Owner(body['name'])
 
-
         self.account.balance = body['balanceAmount']
-
-
 
         if not self.quiet:
             print()
             self.account.print_info()
             print()
-
 
         self.parse_transactions(body['transactions'])
         for trans in self.account.transactions:
@@ -108,10 +90,7 @@ class Sodexo(object):
 
         return self.account.transactions
 
-
     def parse_transactions(self, transactions):
-        tlist = []
-
         for trans in transactions:
             try:
                 t = Transaction(trans['history'])
@@ -138,9 +117,7 @@ if __name__ == '__main__':
     parser.add_argument('--balance', dest='balance', action='store_true', help='Get only account balance')
     parser.add_argument('--quiet', dest='quiet', action='store_true', help='Be quiet')
 
-
     args = parser.parse_args()
-
 
     sodexo = Sodexo(args.card, args.document, args.omit, args.quiet)
     try:
@@ -153,5 +130,3 @@ if __name__ == '__main__':
         exit(1)
     finally:
         pass
-        
-

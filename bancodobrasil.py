@@ -1,16 +1,15 @@
+from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, Owner, App
+
 import requests
 from decimal import Decimal
 from requests.adapters import HTTPAdapter
-from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, Owner, App
 from random import randint
 
-from datetime import datetime, date
+from datetime import datetime
 
 
 import traceback
 import argparse
-
-
 
 
 class BB(BankScraper):
@@ -24,15 +23,10 @@ class BB(BankScraper):
     balance_url = 'https://mobi.bb.com.br/mov-centralizador/servico/ServicoSaldo/saldo'
     transactions_url = 'https://mobi.bb.com.br/mov-centralizador/tela/ExtratoDeContaCorrente/extrato'
 
-
     post_login_warmup_url1 = 'https://mobi.bb.com.br/mov-centralizador/servico/ServicoVersionamento/servicosVersionados'
     post_login_warmup_url2 = 'https://mobi.bb.com.br/mov-centralizador/servico/ServicoVersaoCentralizador/versaoDaAplicacaoWeb'
     post_login_warmup_url3 = 'https://mobi.bb.com.br/mov-centralizador/servico/ServicoMenuPersonalizado/menuPersonalizado'
     post_login_warmup_url4 = 'https://mobi.bb.com.br/mov-centralizador/servico/ServicoMenuTransacoesFavoritas/menuTransacoesFavoritas'
-
-
-
-
 
     def __init__(self, branch, account, password, days, omit_sensitive_info=False, quiet=False):
         if not quiet:
@@ -48,7 +42,7 @@ class BB(BankScraper):
         self.omit_sensitive_info = omit_sensitive_info
         self.quiet = quiet
 
-        self.nick = 'NickRandom.{}'.format(randint(1000,99999))
+        self.nick = 'NickRandom.{}'.format(randint(1000, 99999))
 
         self.idh = ''
 
@@ -56,13 +50,9 @@ class BB(BankScraper):
         self.segmento = ''
 
         self.session = requests.Session()
-        self.session.mount(self.api_endpoint, HTTPAdapter(max_retries=32,pool_connections=50, pool_maxsize=50))
+        self.session.mount(self.api_endpoint, HTTPAdapter(max_retries=32, pool_connections=50, pool_maxsize=50))
         self.session.headers.update({'User-Agent': 'Android;Google Nexus 5 - 6.0.0 - API 23 - 1080x1920;Android;6.0;vbox86p-userdebug 6.0 MRA58K eng.buildbot.20160110.195928 test-keys;mov-android-app;6.14.0.1;en_US;cpu=0|clock=|ram=2052484 kB|espacoSDInterno=12.46 GB|isSmartphone=true|nfc=false|camera=true|cameraFrontal=true|root=true|reconhecimentoVoz=false|resolucao=1080_1776|densidade=3.0|'})
         self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'})
-
-
-
-
 
     def login(self):
         payload = {
@@ -73,11 +63,9 @@ class BB(BankScraper):
             'apelido': self.nick
         }
 
-
         r = self.session.post(self.hash_url, data=payload)
 
         self.idh = r.content
-
 
         payload = {
             'idh': self.idh,
@@ -89,7 +77,6 @@ class BB(BankScraper):
             'idDispositivo': self.idDispositivo,
             'titularidade': 1
         }
-
 
         r = self.session.post(self.login_url, data=payload)
 
@@ -105,8 +92,6 @@ class BB(BankScraper):
             self.account.owner.print_info()
             print()
 
-
-
     def post_login_warmup(self):
         payload = {
             'servico/ServicoVersionamento/servicosVersionados:': '',
@@ -115,18 +100,16 @@ class BB(BankScraper):
             'apelido': self.nick
         }
 
-        for url in [post_login_warmup_url1, post_login_warmup_url2, post_login_warmup_url3, post_login_warmup_url4]:
+        for url in [self.post_login_warmup_url1, self.post_login_warmup_url2, self.post_login_warmup_url3, self.post_login_warmup_url4]:
             self.session.post(url, data=payload)
-
 
     def get_balance(self):
         payload = {
             'servico/ServicoSaldo/saldo': '',
-            'idh': self.idh, 
+            'idh': self.idh,
             'idDispositivo': self.idDispositivo,
             'apelido': self.nick
         }
-
 
         r = self.session.post(self.balance_url, data=payload)
 
@@ -138,15 +121,13 @@ class BB(BankScraper):
 
         print(self.account.get_balance())
 
-
     def get_transactions(self):
         payload = {
             'abrangencia': 8,
-            'idh': self.idh, 
+            'idh': self.idh,
             'idDispositivo': self.idDispositivo,
             'apelido': self.nick
         }
-
 
         r = self.session.post(self.transactions_url, data=payload)
 
@@ -178,7 +159,6 @@ class BB(BankScraper):
                             if tt['componentes'][0]['componentes'][0]['texto'] == 'Juros':
                                 self.account.interest = Decimal(tt['componentes'][1]['componentes'][0]['texto'].split()[-1].replace('.', '').replace(',', '.'))
 
-
         for trans in self.account.transactions:
             trans.print_info()
 
@@ -202,9 +182,7 @@ class BB(BankScraper):
             'Dezembro': 12
         }
 
-
         return datetime.strptime('{}/{}/{}'.format(day, m2n[month], year), '%d/%m/%Y')
-
 
 
 if __name__ == '__main__':
@@ -233,4 +211,3 @@ if __name__ == '__main__':
         exit(1)
     finally:
         bb.logout()
-

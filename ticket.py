@@ -1,14 +1,10 @@
 from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, App, Owner
 from decimal import Decimal
-import uuid
-
-from time import sleep
 
 import requests
-from requests.adapters import HTTPAdapter 
+from requests.adapters import HTTPAdapter
 from datetime import datetime, timezone, timedelta
 
-import json
 
 import traceback
 
@@ -25,11 +21,9 @@ class Ticket(object):
     login_url = 'http://www.ticket.com.br/portal/portalticket/dpages/service/captcha/getConsultCard.jsp'
     transactions_url = 'http://www.ticket.com.br/portal-web/consult-card/release/json'
 
-
     def __init__(self, card, omit_sensitive_data=False, quiet=False, dbc_username=None, dbc_password=None):
         if not quiet:
             print('[*] Ticket Parser is starting...')
-
 
         self.account = Account(card=card, account_type='card')
 
@@ -40,22 +34,14 @@ class Ticket(object):
         self.account.currency = 'R$'
         self.account.bank = 'Ticket'
 
-        #self.dbc_username = dbc_username
-        #self.dbc_password = dbc_password
-
-        #self.dbc_client = deathbycaptcha.SocketClient(self.dbc_username, self.dbc_password)
-
         self.captcha = ''
         self.token = ''
 
-
-
         self.session = requests.Session()
-        self.session.mount(self.api_endpoint, HTTPAdapter(max_retries=32,pool_connections=50, pool_maxsize=50))
+        self.session.mount(self.api_endpoint, HTTPAdapter(max_retries=32, pool_connections=50, pool_maxsize=50))
         self.session.headers.update({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36'})
         self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
         self.session.headers.update({'Referer': 'http://www.ticket.com.br/portal/consulta-de-saldo/'})
-
 
     def get_unix_timestamp(self):
         return int((datetime.now(timezone.utc) + timedelta(days=3)).timestamp() * 1e3)
@@ -82,15 +68,12 @@ class Ticket(object):
 
             return self.token
 
-
-
     def get_balance(self):
         payload = {
             'card': self.account.card,
             'answer': self.captcha,
             'token': self.token,
         }
-
 
         r = self.session.post(self.transactions_url, data=payload)
 
@@ -113,7 +96,6 @@ class Ticket(object):
             'token': self.token,
         }
 
-
         r = self.session.post(self.transactions_url, data=payload)
 
         body = r.json()
@@ -122,9 +104,7 @@ class Ticket(object):
             print('[-] Failed to get card: {}'.format(body['messageError']))
             exit(1)
 
-
         self.account.balance = Decimal(body['card']['balance']['value'].replace(',', '.'))
-
 
         self.parse_transactions(body['card']['release'])
         for trans in self.account.transactions:
@@ -132,10 +112,7 @@ class Ticket(object):
 
         return self.account.transactions
 
-
     def parse_transactions(self, transactions):
-        tlist = []
-
         for trans in transactions:
             try:
                 t = Transaction(trans['description'])
@@ -162,7 +139,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-
     ticket = Ticket(args.card, args.omit, args.quiet)
     try:
         ticket.login()
@@ -175,5 +151,3 @@ if __name__ == '__main__':
         exit(1)
     finally:
         pass
-        
-
