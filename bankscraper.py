@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+import re
 
 
 class AnotherActiveSessionException(Exception):
@@ -74,7 +75,7 @@ class App(object):
 
 class Account(object):
 
-    def __init__(self, branch=None, number=None, password=None, document=None, card=None, dac='', account_type='bank'):
+    def __init__(self, branch=None, number=None, password=None, document=None, card=None, dac='', account_type='bank', validator=None):
         self.bank = 'Generic'
         self.transactions = []
         self.currency = '$'
@@ -131,7 +132,7 @@ class Account(object):
             print('[*] Card Status: {}'.format(self.status))
             print('[*] Company: {}'.format(self.company))
             print('[*] Owner: {}'.format(self.owner.name))
-            print('[*] Card Number: {}'.format(self.card))
+            print('[*] Card Numreter: {}'.format(self.card))
             print('[*] Document: {}'.format(self.document))
 
 
@@ -156,6 +157,21 @@ class Owner(object):
 
 
 class BankScraper(object):
+
+    def validate(self):
+        if self.validator:
+            for f in self.validator.fields:
+                if ':' in f:
+                    method = f.split(':')[0]
+                    field = f.split(':')[1]
+                else:
+                    method = field = f
+                if not self.validator.validate(method, getattr(self.account, field)):
+                    print('[!] Invalid field {}'.format(field))
+                    exit(1)
+
+    def get_digits(self, value):
+        return re.sub(r'[^\d]+', '', value)
 
     def login(self):
         pass

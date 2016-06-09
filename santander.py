@@ -1,6 +1,6 @@
-from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, Owner, App
+from bankscraper import BankScraper, Account, Transaction, Owner
 from decimal import Decimal
-
+from validators import SantanderValidator
 from datetime import datetime
 
 import traceback
@@ -16,13 +16,12 @@ from selenium.common.exceptions import UnexpectedAlertPresentException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 from bs4 import BeautifulSoup as bs
 
 
-class Santander(object):
+class Santander(BankScraper):
 
     api_endpoint = 'https://www.santandernet.com.br/'
 
@@ -33,11 +32,15 @@ class Santander(object):
     login_url1 = 'https://www.santandernet.com.br/'
     login_url2 = 'https://www.santandernet.com.br/IBPF/NMSDLoginAsIs.asp'
 
-    def __init__(self, document, password, days=15, omit_sensitive_data=False, quiet=False):
+    def __init__(self, document, password, days=15, omit_sensitive_data=False, quiet=False, validator=SantanderValidator):
         if not quiet:
             print('[*] Santander Parser is starting...')
 
-        self.account = Account(document=str(document), password=str(password))
+        self.validator = validator()
+
+        self.account = Account(document=document, password=password)
+
+        self.validate()
         self.account.bank = 'Santander'
         self.account.currency = 'R$'
 
@@ -65,13 +68,11 @@ class Santander(object):
         try:
             self.session.get(self.first_page_url)
 
-            #elem = self.session.find_element_by_name('txtCPF')
             elem = self.wait.until(EC.visibility_of_element_located((By.NAME, 'txtCPF')))
             elem.send_keys(self.account.document)
             elem.send_keys(Keys.ENTER)
 
             sleep(3)
-
 
             self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.NAME, 'Principal'))))
             self.session.switch_to.frame(self.wait.until(EC.visibility_of_element_located((By.NAME, 'MainFrame'))))
@@ -80,7 +81,6 @@ class Santander(object):
                 print('[-] You need to manually accept an usage agreement')
                 exit(1)
 
-            #elem = self.session.find_element_by_id('txtSenha')
             elem = self.wait.until(EC.visibility_of_element_located((By.ID, 'txtSenha')))
             elem.send_keys(self.account.password)
             elem.send_keys(Keys.ENTER)

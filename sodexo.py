@@ -1,6 +1,6 @@
-from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, App, Owner
+from bankscraper import BankScraper, Account, Transaction, Owner
 from decimal import Decimal
-
+from validators import SodexoValidator
 import requests
 from requests.adapters import HTTPAdapter
 from datetime import datetime
@@ -11,15 +11,19 @@ import traceback
 import argparse
 
 
-class Sodexo(object):
+class Sodexo(BankScraper):
 
     api_endpoint = 'https://www.app.sodexo.com.br/PMobileServer/Primeth'
 
-    def __init__(self, card, document, omit_sensitive_data=False, quiet=False):
+    def __init__(self, card, document, omit_sensitive_data=False, quiet=False, validator=SodexoValidator):
         if not quiet:
             print('[*] Sodexo Parser is starting...')
 
+        self.validator = validator()
+
         self.account = Account(document=document, card=card, account_type='card')
+
+        self.validate()
 
         self.omit_sensitive_data = omit_sensitive_data
         self.quiet = quiet
@@ -41,6 +45,10 @@ class Sodexo(object):
         r = self.session.post(self.api_endpoint, data=payload)
 
         body = r.json()
+
+        if body['returnCode'] != 0:
+            print('[!] Could not get card: {}'.format(body['returnMessage']))
+            exit(1)
 
         self.account.service_name = body['serviceName']
         self.account.status = body['cardStatus']
@@ -71,6 +79,10 @@ class Sodexo(object):
         r = self.session.post(self.api_endpoint, data=payload)
 
         body = r.json()
+
+        if body['returnCode'] != 0:
+            print('[!] Could not get card: {}'.format(body['returnMessage']))
+            exit(1)
 
         self.account.service_name = body['serviceName']
         self.account.status = body['cardStatus']

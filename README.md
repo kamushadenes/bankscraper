@@ -7,14 +7,15 @@ Script suite to parse financial transactions from brazilian bank and benefit acc
 The banks below were added in the order they are listed
 
 
-| Name                                                                                                                                                                                          | Balance | Transaction History | Additional Info                                                                                       | Method                               | Status |
-| ---                                                                                                                                                                                           | ---     | ---                 | ---                                                                                                   | ---                                  | ---    |
-| [![Itaú](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-itau.png)](https://github.com/kamushadenes/bankscraper/blob/master/itau.py)                              | Yes     | 90 days             | Account Segment, Account Type, Owner Name, Owner Document, Owner Birthday, Overdraft                  | Reversed Mobile API                  | OK     |
-| [![Sodexo](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-sodexo.png)](https://github.com/kamushadenes/bankscraper/blob/master/sodexo.py)                        | Yes     | 20 days             | Card Type, Card Status, Company Name, Owner Name                                                      | Reversed Mobile API                  | OK     |
-| [![Banco do Brasil](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-bancodobrasil.png)](https://github.com/kamushadenes/bankscraper/blob/master/bancodobrasil.py) | Yes     | 30 days             | Account Type, Owner Name, Interest                                                                    | Reversed Mobile API                  | OK     |
-| [![Ticket](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-ticket.png)](https://github.com/kamushadenes/bankscraper/blob/master/ticket.py)                        | Yes     | 30 days             | -                                                                                                     | Web Scraping with Captcha Bypass     | OK     |
-| [![Nubank](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-nubank.png)](https://github.com/kamushadenes/bankscraper/blob/master/nubank.py)                        | No      | 0 days              | Incomplete - Not working at all                                                                       | -                                    | NOK    |
-| [![Santander](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-santander.png)](https://github.com/kamushadenes/bankscraper/blob/master/santander.py)               | Yes     | 60 days             | Account Branch, Account Number, Account Dac, Owner Name, Owner Document, Overdraft, Personal Credit   | Selenium                             | OK     |
+| Name                                                                                                                                                                                          | Balance | Transaction Backlog in Days           | Additional Info                                                                                       | Method                               | Status |
+| ---                                                                                                                                                                                           | ---     | ---                                   | ---                                                                                                   | ---                                  | ---    |
+| [![Itaú](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-itau.png)](https://github.com/kamushadenes/bankscraper/blob/master/itau.py)                              | Yes     | 7, 15, 30, 60, 90                     | Account Segment, Account Type, Owner Name, Owner Document, Owner Birthday, Overdraft                  | Reversed Mobile API                  | OK     |
+| [![Sodexo](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-sodexo.png)](https://github.com/kamushadenes/bankscraper/blob/master/sodexo.py)                        | Yes     | 30                                    | Card Type, Card Status, Company Name, Owner Name                                                      | Reversed Mobile API                  | OK     |
+| [![Banco do Brasil](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-bancodobrasil.png)](https://github.com/kamushadenes/bankscraper/blob/master/bancodobrasil.py) | Yes     | 30                                    | Account Type, Owner Name, Interest                                                                    | Reversed Mobile API                  | OK     |
+| [![Ticket](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-ticket.png)](https://github.com/kamushadenes/bankscraper/blob/master/ticket.py)                        | Yes     | 30                                    | -                                                                                                     | Web Scraping with Captcha Bypass     | OK     |
+| [![Nubank](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-nubank.png)](https://github.com/kamushadenes/bankscraper/blob/master/nubank.py)                        | No      | -                                     | Incomplete - Not working at all                                                                       | -                                    | NOK    |
+| [![Santander](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-santander.png)](https://github.com/kamushadenes/bankscraper/blob/master/santander.py)               | Yes     | 60                                    | Account Branch, Account Number, Account Dac, Owner Name, Owner Document, Overdraft, Personal Credit   | Selenium                             | OK     |
+| [![Alelo](https://raw.githubusercontent.com/kamushadenes/bankscraper/master/logo/icon-alelo.png)](https://github.com/kamushadenes/bankscraper/blob/master/alelo.py)                           | Yes     | 1-180                                 | Account Branch, Account Number, Account Dac, Owner Name, Owner Document, Overdraft, Personal Credit   | Selenium                             | OK     |
 
 
 
@@ -115,3 +116,22 @@ optional arguments:
   --quiet               Be quiet
 </code></pre>
 
+### Alelo
+<pre><code>
+usage: alelo.py [-h] --document DOCUMENT --password PASSWORD --card CARD
+                [--days DAYS] [--omit-sensitive-data] [--balance] [--quiet]
+
+Program to parse financial transactions from Alelo
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --document DOCUMENT   Alelo Account Owner Document
+  --password PASSWORD   Alelo Account password
+  --card CARD           Alelo Card Number password
+  --days DAYS           Transaction log days
+  --omit-sensitive-data
+                        Omit sensitive data, like documents, paychecks and
+                        current balance
+  --balance             Get only account balance
+  --quiet               Be quiet
+</code></pre>

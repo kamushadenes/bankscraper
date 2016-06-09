@@ -1,5 +1,5 @@
-from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, Owner, App
-
+from bankscraper import BankScraper, Account, Transaction, Owner
+from validators import BancoDoBrasilValidator
 import requests
 from decimal import Decimal
 from requests.adapters import HTTPAdapter
@@ -12,7 +12,7 @@ import traceback
 import argparse
 
 
-class BB(BankScraper):
+class BancoDoBrasil(BankScraper):
 
     api_endpoint = 'https://mobi.bb.com.br/mov-centralizador/'
     idDispositivo = '000000000000000'
@@ -28,11 +28,16 @@ class BB(BankScraper):
     post_login_warmup_url3 = 'https://mobi.bb.com.br/mov-centralizador/servico/ServicoMenuPersonalizado/menuPersonalizado'
     post_login_warmup_url4 = 'https://mobi.bb.com.br/mov-centralizador/servico/ServicoMenuTransacoesFavoritas/menuTransacoesFavoritas'
 
-    def __init__(self, branch, account, password, days, omit_sensitive_info=False, quiet=False):
+    def __init__(self, branch, account, password, days, omit_sensitive_info=False, quiet=False, validator=BancoDoBrasilValidator):
+
+        self.validator = validator()
+
         if not quiet:
             print('[*] Banco do Brasil Parser is starting...')
 
         self.account = Account(branch=branch, number=account, password=password)
+
+        self.validate()
 
         self.account.bank = 'Banco do Brasil'
         self.account.currency = 'R$'
@@ -79,6 +84,13 @@ class BB(BankScraper):
         }
 
         r = self.session.post(self.login_url, data=payload)
+
+        if bytes('CODIGO NAO CONFERE', 'utf-8') in r.content or bytes('G176-845', 'utf-8') in r.content:
+            print('[!] Login failed, invalid credentials')
+            exit(1)
+        elif bytes('SENHA BLOQUEADA', 'utf-8') in r.content:
+            print('[!] Login failed, account locked')
+            exit(1)
 
         j = r.json()
 
@@ -198,7 +210,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    bb = BB(args.branch, args.account, args.password, args.days, args.omit, args.quiet)
+    bb = BancoDoBrasil(args.branch, args.account, args.password, args.days, args.omit, args.quiet)
 
     try:
         bb.login()

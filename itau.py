@@ -1,6 +1,6 @@
-from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, Owner, App
+from bankscraper import BankScraper, Account, Transaction, Owner, App
 from decimal import Decimal
-
+from validators import ItauValidator
 from time import sleep
 
 import requests
@@ -15,7 +15,7 @@ import traceback
 import argparse
 
 
-class Itau(object):
+class Itau(BankScraper):
 
     app_id = 'kspf'
     app_version = '4.1.19'
@@ -31,11 +31,16 @@ class Itau(object):
 
     device_session_template = 'Modelo: {platform_model}|Operadora:|VersaoSO:{platform_version}|appIdCore:'
 
-    def __init__(self, branch, account, password, days=15, omit_sensitive_data=False, quiet=False):
+    def __init__(self, branch, account, password, days=15, omit_sensitive_data=False, quiet=False, validator=ItauValidator):
         if not quiet:
             print('[*] Itaú Parser is starting...')
 
-        self.account = Account(branch=str(branch), number=str(account).split('-')[0], password=str(password), dac=str(account).split('-')[1])
+        number = account.split('-')[0] if '-' in account else account[:5]
+        dac = account.split('-')[1] if '-' in account else account[-1]
+
+        self.validator = validator()
+        self.account = Account(branch=branch, number=number, password=password, dac=dac)
+        self.validate()
         self.account.bank = 'Itaú'
         self.account.currency = 'R$'
 
@@ -128,11 +133,9 @@ class Itau(object):
 
         obj = self.json_recursive_loads(r.content.decode())
 
-        if obj['opstatus'] == 0:
-            if not self.quiet:
-                print('[+] Login successful!')
-        else:
-            raise GeneralException('Something went wrong...', request=r)
+        if not obj['opstatus'] == 0:
+            print('Something went wrong...')
+            exit(1)
 
         self.account.app = App('Itaú')
 
@@ -183,16 +186,20 @@ class Itau(object):
 
         obj = self.json_recursive_loads(r.content.decode())
 
-        if obj['opstatus'] == 0:
-            pass
-        else:
-            raise GeneralException('Something went wrong...', request=r)
+        if 'Conta corrente invalida' in obj['Dados']['RESPOSTA']['DADOS']:
+            print('Invalid account number')
+            exit(1)
+        elif ('A senha digitada' in obj['Dados']['RESPOSTA']['DADOS'] or 'Sua senha' in obj['Dados']['RESPOSTA']['DADOS']) and 'incorreta' in obj['Dados']['RESPOSTA']['DADOS']:
+            print('Invalid password')
+            exit(1)
 
         try:
             if int(obj['Dados']['RESPOSTA']['DADOS']['CODIGO']) == 31:
-                raise AnotherActiveSessionException(obj['Dados']['RESPOSTA']['DADOS']['MENSAGEM'])
+                print(obj['Dados']['RESPOSTA']['DADOS']['MENSAGEM'])
+                exit(1)
             elif int(obj['Dados']['RESPOSTA']['DADOS']['CODIGO']) == 30:
-                raise MaintenanceException(obj['Dados']['RESPOSTA']['DADOS']['MENSAGEM'])
+                print(obj['Dados']['RESPOSTA']['DADOS']['MENSAGEM'])
+                exit(1)
         except KeyError:
             pass
 
@@ -246,7 +253,8 @@ class Itau(object):
             if not self.quiet:
                 print('[+] Logged out succesfully!')
         else:
-            raise GeneralException('Something went wrong...', request=r)
+            print('Something went wrong...')
+            exit(1)
 
     def post_login_warmup(self):
         if not self.quiet:
@@ -277,7 +285,7 @@ class Itau(object):
         if obj['opstatus'] == 0:
             pass
         else:
-            raise GeneralException('Something went wrong...')
+            print('Something went wrong...')
 
         payload = {
             'appID': self.app_id,
@@ -296,7 +304,7 @@ class Itau(object):
         if obj['opstatus'] == 0:
             pass
         else:
-            raise GeneralException('Something went wrong...', request=r)
+            print('Something went wrong...')
 
         payload = {
             'Guid': '7C9C0508-6EFD-47B6-9DBA-5E4B1205D560',
@@ -321,7 +329,7 @@ class Itau(object):
         if obj['opstatus'] == 0:
             pass
         else:
-            raise GeneralException('Something went wrong...', request=r)
+            print('Something went wrong...')
 
         payload = {
             'Guid': '7C9C0508-6EFD-47B6-9DBA-5E4B1205D560',
@@ -346,7 +354,7 @@ class Itau(object):
         if obj['opstatus'] == 0:
             pass
         else:
-            raise GeneralException('Something went wrong...', request=r)
+            print('Something went wrong...')
 
         payload = {
             'HolderCodeType': 1,
@@ -372,7 +380,7 @@ class Itau(object):
         if obj['opstatus'] == 0:
             pass
         else:
-            raise GeneralException('Something went wrong...', request=r)
+            print('Something went wrong...')
 
     def get_balance(self):
         if not self.quiet:
@@ -405,7 +413,7 @@ class Itau(object):
         if obj['opstatus'] == 0:
             pass
         else:
-            raise GeneralException('Something went wrong...', request=r)
+            print('Something went wrong...')
 
         for o in obj['Dados']['RESPOSTA']['DADOS']['DADOSEXTRATO']['SALDORESUMIDO']['ITEM']:
             if o['NOME'] == 'SALDODISPSAQUERESUMO':
@@ -450,7 +458,7 @@ class Itau(object):
         if obj['opstatus'] == 0:
             pass
         else:
-            raise GeneralException('Something went wrong...', request=r)
+            print('Something went wrong...')
 
         self.parse_transactions(obj['Dados']['RESPOSTA']['DADOS']['DADOSEXTRATO']['EXTRATO']['MOVIMENT'])
 

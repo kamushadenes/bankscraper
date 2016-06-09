@@ -5,7 +5,7 @@ import uuid
 from time import sleep
 
 import requests
-from requests.adapters import HTTPAdapter 
+from requests.adapters import HTTPAdapter
 from datetime import datetime
 
 import json
@@ -16,7 +16,7 @@ import traceback
 import argparse
 
 
-class Nubank(object):
+class Nubank(BankScraper):
 
     api_endpoint = 'https://prod-auth.nubank.com.br/'
     login_url = 'https://prod-auth.nubank.com.br/api/token'
@@ -47,7 +47,7 @@ class Nubank(object):
 
     def login(self):
         r = self.session.get(self.pre_login_url)
-        
+
 
         payload = {
             'client_id': 'other.legacy',
@@ -68,7 +68,7 @@ class Nubank(object):
             print('[-] Login failed: {}'.format(body['error']))
             exit(1)
 
-    
+
     def get_balance(self):
         raise NotImplementedError
 
@@ -104,5 +104,5 @@ if __name__ == '__main__':
         exit(1)
     finally:
         pass
-        
+
 

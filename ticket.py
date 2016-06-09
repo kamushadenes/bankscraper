@@ -1,6 +1,6 @@
-from bankscraper import BankScraper, AnotherActiveSessionException, MaintenanceException, GeneralException, Account, Transaction, App, Owner
+from bankscraper import BankScraper, Account, Transaction
 from decimal import Decimal
-
+from validators import TicketValidator
 import requests
 from requests.adapters import HTTPAdapter
 from datetime import datetime, timezone, timedelta
@@ -13,7 +13,7 @@ import os
 import argparse
 
 
-class Ticket(object):
+class Ticket(BankScraper):
 
     api_endpoint = 'https://www.app.ticket.com.br/PMobileServer/Primeth'
 
@@ -21,11 +21,15 @@ class Ticket(object):
     login_url = 'http://www.ticket.com.br/portal/portalticket/dpages/service/captcha/getConsultCard.jsp'
     transactions_url = 'http://www.ticket.com.br/portal-web/consult-card/release/json'
 
-    def __init__(self, card, omit_sensitive_data=False, quiet=False, dbc_username=None, dbc_password=None):
+    def __init__(self, card, omit_sensitive_data=False, quiet=False, dbc_username=None, dbc_password=None, validator=TicketValidator):
         if not quiet:
             print('[*] Ticket Parser is starting...')
 
+        self.validator = validator()
+
         self.account = Account(card=card, account_type='card')
+
+        self.validate()
 
         self.account.currency = 'R$'
 
