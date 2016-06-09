@@ -2,6 +2,8 @@
 
 Script suite to parse financial transactions from brazilian bank and benefit accounts, including support (when applicable) for interest fees and overdraft limits, besides account metadata and account holder information, when available
 
+**WARNING:** Using this tool without care may lead to your bank account being blocked. Use at your own risk!
+
 ## Current Supported Banks
 
 The banks below were added in the order they are listed
