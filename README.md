@@ -71,8 +71,8 @@ Program to parse financial transactions from Banco do Brasil
 
 optional arguments:
   -h, --help            show this help message and exit
-  --branch BRANCH       Banco do Brasil Branch number, in the format 0000-0
-  --account ACCOUNT     Banco do Brasil Account number, in the format 0000-0
+  --branch BRANCH       Banco do Brasil Branch number, in the format 00000
+  --account ACCOUNT     Banco do Brasil Account number, in the format 000000
   --password PASSWORD   Banco do Brasil Account password
   --days DAYS           Transaction log days
   --omit-sensitive-data
