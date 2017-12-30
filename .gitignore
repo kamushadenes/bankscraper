@@ -1,6 +1,7 @@
 env
 *.DS_Store
 *.pyc
+*~
 .python_version
 __pycache__
 ghostdriver.log
