@@ -200,8 +200,8 @@ class BancoDoBrasil(BankScraper):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Program to parse financial transactions from Banco do Brasil')
-    parser.add_argument('--branch', help='Banco do Brasil Branch number, in the format 0000-0', required=True)
-    parser.add_argument('--account', help='Banco do Brasil Account number, in the format 0000-0', required=True)
+    parser.add_argument('--branch', help='Banco do Brasil Branch number, maximum 5 digits (without -)', required=True)
+    parser.add_argument('--account', help='Banco do Brasil Account number, maximum 6 digits (without -)', required=True)
     parser.add_argument('--password', help='Banco do Brasil Account password', required=True)
     parser.add_argument('--days', help='Transaction log days', default=15, type=int)
     parser.add_argument('--omit-sensitive-data', dest='omit', action='store_true', help='Omit sensitive data, like documents, paychecks and current balance')

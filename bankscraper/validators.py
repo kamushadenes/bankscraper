@@ -161,13 +161,30 @@ class BankValidator(BaseValidator):
 
 class BancoDoBrasilValidator(BankValidator):
 
+    # To this validator, the two next values works as max size,
+    # because branch and account numbers don't has fixed width
     branch_size = 5
-    account_size = 5
+    account_size = 6
     password_size = 8
 
     allowed_days = [30]
 
     fields = ['branch', 'number', 'password']
+
+    def branch(self, branch):
+        return len(branch) <= self.branch_size
+
+    def account(self, account):
+
+        if '-' not in account:
+            try:
+                int(account)
+            except ValueError:
+                return False
+        else:
+            return False
+
+        return len(account) <= self.account_size
 
 
 class ItauValidator(BankValidator):
